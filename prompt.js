@@ -58,13 +58,14 @@ BootstrapModalPrompt = function() {
       }
     }, options);
 
+    $('.bs-modal-prompt').remove();
     var modalWrap = $('.bs-prompt-modal');
     if (!modalWrap.size()) {
       modalWrap = createModal();
     }
 
     var modal = modalWrap.find('.modal');
-    var dialog = $('.modal-dialog', modalWrap); 
+    var dialog = $('.modal-dialog', modalWrap);
     var body;
 
     if (options.dialogTemplate) {
@@ -75,15 +76,15 @@ BootstrapModalPrompt = function() {
     } else {
       // need to create a dialog if one isn't provided
       if (!dialog.size()) {
-        dialog = createModalDialog(modal);  
+        dialog = createModalDialog(modal);
       }
-      
+
       dialog.find('.modal-title').html(options.title);
       // Reset body.
       body = dialog.find('.modal-body').html('');
     }
 
-    
+
 
     // Function to be called when confirmed.
     // Defined up here so it can be used in AutoForm submit hook.
@@ -117,16 +118,16 @@ BootstrapModalPrompt = function() {
       dialog = $('.modal-dialog');
     }
     else if (options.template) {
-      // Render the given template with the specified data and insert it 
+      // Render the given template with the specified data and insert it
       // to the modal-body directly.
       Blaze.renderWithData(
-        options.template, 
+        options.template,
         options.templateData,
         body.get(0)
       );
     }
     else if (options.formSchema) {
-      // Render the form using the autoform quickForm template. 
+      // Render the form using the autoform quickForm template.
       Blaze.renderWithData(
         Template.quickForm,
         {schema: options.formSchema, id: 'bootstrapModalPromptForm'},
@@ -189,7 +190,7 @@ BootstrapModalPrompt = function() {
       return false;
     });
 
-    
+
 
     modal.find('.modal-btn-confirm').off().click(function() {
       if (options.formSchema) {
@@ -209,6 +210,7 @@ BootstrapModalPrompt = function() {
   exports.dismiss = function() {
     var modal = $('.modal', '.bs-prompt-modal');
     modal.modal('hide');
+    $('.bs-modal-prompt').remove();
   }
 
   var createModal = function() {
@@ -230,12 +232,12 @@ BootstrapModalPrompt = function() {
 
                   '</div>' +
                   '<div class="modal-footer">' +
-                    '<button type="button" class="btn btn-default modal-btn-dismiss" >Close</button>' + 
+                    '<button type="button" class="btn btn-default modal-btn-dismiss" >Close</button>' +
                     '<button type="button" class="btn btn-primary modal-btn-confirm">OK</button>' +
                   '</div>' +
                 '</div></div>';
     $modal.append(tpl);
-    return $('.modal-dialog');          
+    return $('.modal-dialog');
   };
 
   return exports;
