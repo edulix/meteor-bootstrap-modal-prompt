@@ -1,5 +1,5 @@
-BootstrapModalPrompt = {
-
+BootstrapModalPrompt = function() {
+  var exports = {};
   /*
    * Expected format of options:
    * {
@@ -12,12 +12,14 @@ BootstrapModalPrompt = {
    *   onShown: function() {} // callback function.
    * }
    */
-  prompt: function(options, callback) {
+  exports.prompt = function(options, callback) {
     options = _.extend({
       title: 'Confirmation',
       content: '',
       template: null,
       templateData: {},
+      dialogTemplate: null,
+
 
       formSchema: null,
 
@@ -56,17 +58,33 @@ BootstrapModalPrompt = {
       }
     }, options);
 
+    $('.bs-modal-prompt').remove();
     var modalWrap = $('.bs-prompt-modal');
     if (!modalWrap.size()) {
-      modalWrap = this.createModal();
+      modalWrap = createModal();
     }
 
     var modal = modalWrap.find('.modal');
+    var dialog = $('.modal-dialog', modalWrap);
+    var body;
 
-    modal.find('.modal-title').html(options.title);
+    if (options.dialogTemplate) {
+      // reset the dialog if it exists as custom template will render it
+      if (dialog.size()) {
+        dialog.remove();
+      }
+    } else {
+      // need to create a dialog if one isn't provided
+      if (!dialog.size()) {
+        dialog = createModalDialog(modal);
+      }
 
-    // Reset body.
-    var body = modal.find('.modal-body').html('');
+      dialog.find('.modal-title').html(options.title);
+      // Reset body.
+      body = dialog.find('.modal-body').html('');
+    }
+
+
 
     // Function to be called when confirmed.
     // Defined up here so it can be used in AutoForm submit hook.
@@ -83,21 +101,33 @@ BootstrapModalPrompt = {
       }
 
       modal.modal('hide');
-      callback(data ? data : true);
+      if (callback)
+        callback(data ? data : true);
     }
 
     var content = options.content;
-    if (options.template) {
-      // Render the given template with the specified data and insert it 
+    if (options.dialogTemplate) {
+      // render entire dialog template with the specified data and insert it
+      // into modal directly
+      Blaze.renderWithData(
+        options.dialogTemplate,
+        options.templateData,
+        modal.get(0)
+      );
+
+      dialog = $('.modal-dialog');
+    }
+    else if (options.template) {
+      // Render the given template with the specified data and insert it
       // to the modal-body directly.
       Blaze.renderWithData(
-        options.template, 
+        options.template,
         options.templateData,
         body.get(0)
       );
     }
     else if (options.formSchema) {
-      // Render the form using the autoform quickForm template. 
+      // Render the form using the autoform quickForm template.
       Blaze.renderWithData(
         Template.quickForm,
         {schema: options.formSchema, id: 'bootstrapModalPromptForm'},
@@ -119,6 +149,16 @@ BootstrapModalPrompt = {
     modal.find('.modal-btn-dismiss').html(options.btnDismissText);
     modal.find('.modal-btn-save').html(options.btnOkText);
 
+    // if btnDismissText is falsey, remove it
+    if (!options.btnDismissText) {
+      modal.find('.modal-btn-dismiss').remove();
+    }
+
+    // if btnOkText is falsey, remove it
+    if (!options.btnOkText) {
+      modal.find('.modal-btn-save').remove();
+    }
+
     modal.on('shown.bs.modal', function() {
       if (options.afterShow) {
         options.afterShow(options, modal.get(0));
@@ -127,6 +167,10 @@ BootstrapModalPrompt = {
     modal.on('hidden.bs.modal', function() {
       if (options.afterHide) {
         options.afterHide(options, modal.get(0));
+      }
+      // need to clean up custom dialog template if used
+      if (options.dialogTemplate) {
+        dialog.remove();
       }
     });
 
@@ -140,12 +184,13 @@ BootstrapModalPrompt = {
       }
 
       modal.modal('hide');
-      callback(false);
+      if (callback)
+        callback(false);
 
       return false;
     });
 
-    
+
 
     modal.find('.modal-btn-confirm').off().click(function() {
       if (options.formSchema) {
@@ -159,11 +204,26 @@ BootstrapModalPrompt = {
     });
 
     modal.modal('show');
-  },
+  };
 
-  createModal: function() {
+  // Dismisses current modal if open
+  exports.dismiss = function() {
+    var modal = $('.modal', '.bs-prompt-modal');
+    modal.modal('hide');
+    $('.bs-modal-prompt').remove();
+  }
+
+  var createModal = function() {
     var tpl = '<div class="bs-prompt-modal">' +
-                '<div class="modal fade"><div class="modal-dialog"><div class="modal-content">' +
+                '<div class="modal fade"></div>' +
+              '</div>';
+
+    $('body').append(tpl);
+    return $('.bs-prompt-modal');
+  };
+
+  var createModalDialog = function($modal) {
+    var tpl = '<div class="modal-dialog"><div class="modal-content">' +
                   '<div class="modal-header">' +
                     '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
                     '<h4 class="modal-title"></h4>' +
@@ -172,14 +232,13 @@ BootstrapModalPrompt = {
 
                   '</div>' +
                   '<div class="modal-footer">' +
-                    '<button type="button" class="btn btn-default modal-btn-dismiss" >Close</button>' + 
+                    '<button type="button" class="btn btn-default modal-btn-dismiss" >Close</button>' +
                     '<button type="button" class="btn btn-primary modal-btn-confirm">OK</button>' +
                   '</div>' +
+                '</div></div>';
+    $modal.append(tpl);
+    return $('.modal-dialog');
+  };
 
-                '</div></div></div>' +
-              '</div>';
-
-    $('body').append(tpl);
-    return $('.bs-prompt-modal');
-  }
-};
+  return exports;
+}();
