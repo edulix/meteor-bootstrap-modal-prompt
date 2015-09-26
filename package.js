@@ -1,8 +1,8 @@
 Package.describe({
-  name: 'theduke:bootstrap-modal-prompt',
+  name: 'edulix:bootstrap-modal-prompt',
   summary: "Show prompts in a bootstrap modal.",
   version: "0.0.3",
-  git: "https://github.com/theduke/meteor-bootstrap-modal-prompt"
+  git: "https://github.com/edulix/meteor-bootstrap-modal-prompt"
 });
 
 Package.onUse(function (api) {
