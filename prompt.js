@@ -147,7 +147,7 @@ BootstrapModalPrompt = function() {
     }
 
     modal.find('.modal-btn-dismiss').html(options.btnDismissText);
-    modal.find('.modal-btn-save').html(options.btnOkText);
+    modal.find('.modal-btn-confirm').html(options.btnOkText);
 
     // if btnDismissText is falsey, remove it
     if (!options.btnDismissText) {
@@ -156,7 +156,7 @@ BootstrapModalPrompt = function() {
 
     // if btnOkText is falsey, remove it
     if (!options.btnOkText) {
-      modal.find('.modal-btn-save').remove();
+      modal.find('.modal-btn-confirm').remove();
     }
 
     modal.on('shown.bs.modal', function() {
